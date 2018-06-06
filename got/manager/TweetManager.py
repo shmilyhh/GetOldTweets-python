@@ -66,7 +66,7 @@ class TweetManager:
 					for i, v in enumerate(tweet_text_list):
 						if v == "":
 							tweet_text_list[i] = " "
-					# print("".join(tweet_text_list))
+					print(tweet_text_list)
 					txt = "".join(tweet_text_list)
 					# print(" ".join(re.compile('(#\\w*)').findall(txt)))
 					
@@ -74,6 +74,14 @@ class TweetManager:
 					txt = ""
 					print ("can not get txt")
 					traceback.print_exc()
+				
+				try:
+					reply = int(tweetPQ("span.ProfileTweet-action--reply span.ProfileTweet-actionCount").attr("data-tweet-stat-count").replace(",", ""))
+				except Exception as e:
+					reply = 0
+					print ("can not get retweets.")
+					traceback.print_exc()
+
 				try:
 					retweets = int(tweetPQ("span.ProfileTweet-action--retweet span.ProfileTweet-actionCount").attr("data-tweet-stat-count").replace(",", ""))
 				except Exception as e:
@@ -141,6 +149,7 @@ class TweetManager:
 				tweet.username = usernameTweet
 				tweet.text = txt
 				tweet.date = datetime.datetime.fromtimestamp(dateSec)
+				tweet.reply = reply
 				tweet.retweets = retweets
 				tweet.favorites = favorites
 				tweet.mentions = " ".join(re.compile('(@\\w*)').findall(tweet.text))
@@ -168,7 +177,8 @@ class TweetManager:
 	@staticmethod
 	def getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy):
         # add l=en, only get english tweets
-		url = "https://twitter.com/i/search/timeline?f=tweets&q=%s&src=typd&max_position=%s"
+		# url = "https://twitter.com/i/search/timeline?f=tweets&q=%s&src=typd&max_position=%s"
+		url = "https://twitter.com/i/search/timeline?f=tweets&q=%s&src=typd&l=en&max_position=%s"
 
 		urlGetData = ''
 
@@ -192,8 +202,12 @@ class TweetManager:
 			if tweetCriteria.topTweets:
 				url = "https://twitter.com/i/search/timeline?q=%s&src=typd&max_position=%s"
 
+		# if hasattr(tweetCriteria, 'lang'):
+		# 	urlLang = 'l=' + tweetCriteria.lang + '&'
+		# else:
+		# 	urlLang = ''
 
-
+		# url = url % (urllib.parse.quote(urlGetData), urlLang, refreshCursor)
 		url = url % (urllib.quote(urlGetData), refreshCursor)
 		# print ("url: {}".format(url))
 		headers = [
