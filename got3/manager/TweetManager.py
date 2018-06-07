@@ -22,17 +22,23 @@ class TweetManager:
 
 		active = True
 
+		totalNumTweets = 0
+
 		while active:
 			json, fullurl = TweetManager.getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy)
 			if len(json['items_html'].strip()) == 0:
+				# print("break")
 				break
 
 			refreshCursor = json['min_position']
+			# print ("refreshCursor is {}".format(refreshCursor))
 			scrapedTweets = PyQuery(json['items_html'])
 			#Remove incomplete tweets withheld by Twitter Guidelines
 			scrapedTweets.remove('div.withheld-tweet')
 			tweets = scrapedTweets('div.js-stream-tweet')
 			
+
+			totalNumTweets += len(tweets)
 			if len(tweets) == 0:
 				break
 			
@@ -53,7 +59,6 @@ class TweetManager:
 					for i, v in enumerate(tweet_text_list):
 						if v == "":
 							tweet_text_list[i] = " "
-					print(tweet_text_list)
 					txt = "".join(tweet_text_list)
 					# print(" ".join(re.compile('(#\\w*)').findall(txt)))
 					
@@ -159,7 +164,7 @@ class TweetManager:
 		if receiveBuffer and len(resultsAux) > 0:
 			receiveBuffer(resultsAux)
 		
-		return results
+		return results, totalNumTweets
 	
 	@staticmethod
 	def getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy):
@@ -191,7 +196,7 @@ class TweetManager:
 
 		headers = [
 			('Host', "twitter.com"),
-			('User-Agent', "Mozilla/5.0 (Windows NT 6.1; Win64; x64)"),
+			('User-Agent', "Chrome/66.0.3359.181"),
 			('Accept', "application/json, text/javascript, */*; q=0.01"),
 			('Accept-Language', "de,en-US;q=0.7,en;q=0.3"),
 			('X-Requested-With', "XMLHttpRequest"),

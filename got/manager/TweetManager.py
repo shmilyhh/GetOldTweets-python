@@ -66,7 +66,6 @@ class TweetManager:
 					for i, v in enumerate(tweet_text_list):
 						if v == "":
 							tweet_text_list[i] = " "
-					print(tweet_text_list)
 					txt = "".join(tweet_text_list)
 					# print(" ".join(re.compile('(#\\w*)').findall(txt)))
 					
